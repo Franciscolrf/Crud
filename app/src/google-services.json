@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "237973699472",
+    "project_id": "proyecto-c41a2",
+    "storage_bucket": "proyecto-c41a2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:237973699472:android:b48c95a86b678d0a1d5115",
+        "android_client_info": {
+          "package_name": "mx.edu.itson.crud"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRRSn2YSeFo6WX9RypzBmq5KzdGsCMzDw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
