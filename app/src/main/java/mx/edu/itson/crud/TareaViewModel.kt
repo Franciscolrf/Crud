@@ -4,36 +4,34 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 class TareaViewModel: ViewModel() {
-    private val db = Firebase.firestore
+    private val db = Firebase.firestore;
 
     private var _listaTareas = MutableLiveData<List<Tarea>>(emptyList())
     val listaTareas: LiveData<List<Tarea>> = _listaTareas
 
     init {
-        obtenerTareasTiempoReal()
+        obtenerTareas()
     }
 
-    // NUEVO: Listener en tiempo real
-    private fun obtenerTareasTiempoReal() {
-        db.collection("tareas").addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                error.printStackTrace()
-                return@addSnapshotListener
-            }
+    fun obtenerTareas() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val resultado = db.collection("tareas").get().await()
 
-            if (snapshot != null && !snapshot.isEmpty) {
-                val tareas = snapshot.documents.mapNotNull { it.toObject(Tarea::class.java) }
+                val tareas = resultado.documents.mapNotNull {
+                    it.toObject(Tarea::class.java)
+                }
                 _listaTareas.postValue(tareas)
-            } else {
-                _listaTareas.postValue(emptyList())
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
@@ -43,7 +41,7 @@ class TareaViewModel: ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 db.collection("tareas").document(tarea.id).set(tarea).await()
-                // Ya no necesitas actualizar la lista aquí
+                _listaTareas.postValue(_listaTareas.value?.plus(tarea))
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -54,7 +52,7 @@ class TareaViewModel: ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 db.collection("tareas").document(tarea.id).update(tarea.toMap()).await()
-                // Ya no necesitas actualizar la lista aquí
+                _listaTareas.postValue(_listaTareas.value?.map { if (it.id == tarea.id) tarea else it })
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -65,10 +63,11 @@ class TareaViewModel: ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 db.collection("tareas").document(id).delete().await()
-                // Ya no necesitas actualizar la lista aquí
+                _listaTareas.postValue(_listaTareas.value?.filter { it.id != id })
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
+
 }

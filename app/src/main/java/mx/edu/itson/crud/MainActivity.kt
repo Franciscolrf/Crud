@@ -1,12 +1,12 @@
 package mx.edu.itson.crud
 
+import mx.edu.itson.crud.databinding.ActivityMainBinding
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
-import mx.edu.itson.crud.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -17,14 +17,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        enableEdgeToEdge()
+        setContentView(R.layout.activity_main)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         viewModel = ViewModelProvider(this)[TareaViewModel::class.java]
 
         viewModel.listaTareas.observe(this) { tareas ->
-            setupRecylerView(tareas)
+            setupRecyclerView(tareas)
         }
 
         binding.btnAgregar.setOnClickListener {
@@ -49,19 +55,18 @@ class MainActivity : AppCompatActivity() {
             viewModel.actualizarTareas(tareaEdit)
         }
 
-
     }
 
-    fun setupRecylerView(listaTareas: List<Tarea>){
+    fun setupRecyclerView(listaTareas: List<Tarea>) {
         adapter = TareaAdapter(listaTareas, ::borrarTarea, ::actualizarTarea)
         binding.rvTareas.adapter = adapter
     }
 
-    fun borrarTarea(id: String){
+    fun borrarTarea(id: String) {
         viewModel.borrarTareas(id)
     }
 
-    fun actualizarTarea(tarea: Tarea){
+    fun actualizarTarea(tarea: Tarea) {
         tareaEdit = tarea
 
         binding.etTitulo.setText(tareaEdit.titulo)
